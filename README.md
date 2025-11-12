@@ -1,4 +1,4 @@
-# Contorter — Evading Intrusion Detectors via Intelligent Context Distortion
+# Contorter 
 
 This repository contains the official implementation and analysis notebooks for **Contorter: A Context is Worth a Thousand Lies: Evading Intrusion Detectors via Intelligent Context Distortion**.  
 Contorter is an evasion framework that generates *contextually-plausible* gadget events to hide malicious nodes from node-level provenance-based intrusion detection systems (PIDSes). The notebooks reproduce the evasion experiments we ran against the **Flash** PIDS implementation and the DARPA E3 partitions used in our evaluation.
