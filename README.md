@@ -7,6 +7,16 @@ Contorter is an evasion framework that generates *contextually-plausible* gadget
 ![alt text](contorter-overview.png)
 ***
 
+## How Contorter Integrates Flash
+
+We reuse Flash’s preprocessing and graph-construction modules to ensure full compatibility with the Flash pipeline:
+
+1. **Preprocessing** — convert raw JSON logs into the text files used for training (benign behavior) and testing (benign + malicious) using Flash’s preprocessing scripts.  
+2. **Provenance construction** — run Flash’s provenance-builder so the resulting provenance graphs follow the same formatting and field conventions that Flash expects. This guarantees the input representation matches Flash’s model inference pipeline.  
+3. **Contorter pipeline** — once graphs are constructed in Flash’s format, apply Contorter’s modules to select candidate nodes, retrieve and verify gadgets, and inject mimicry interactions. Evaluate detection metrics before and after injection to measure evasion effectiveness.
+
+
+## Repository Structure
 
 ```plaintext
 README.md
@@ -26,16 +36,12 @@ Contorter on Flash PIDS/
 | `Contorter_on_Flash_PIDS/THEIA/FLASH_THEIA.ipynb`   | THEIA   | Reproduces Contorter experiments on the THEIA Dataset.                             |
 | `Contorter_on_Flash_PIDS/TRACE/FLASH_TRACE.ipynb`   | TRACE   | Reproduces Contorter experiments on the TRACE Dataset.                             |
 
-## What each notebook demonstrates
+## What Each Notebook Demonstrates
 
 1. Provenance graph loading and preprocessing.
 2. Execution of Contorter’s core modules — **TypeSel → FOpt → CSMax → GadRet → OccVer → EVer → ImpMax**.
 3. Gadget application and context manipulation.
-4. Evaluation using **Flash** and reporting before/after evasion metrics (recall, FPR, etc.).
-5. Reproduction of figures and tables from the paper.
-
-
-Here’s the **properly formatted Markdown** version of that entire section — it will render cleanly in GitHub and Jupyter notebooks:
+4. Evaluation using **Flash** evaluation metrics for fair comparison and reporting before/after evasion metrics (recall, FPR, etc.).
 
 ---
 
@@ -56,11 +62,7 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Prepare Datasets
-
-This repository **does not** include dataset files (e.g., DARPA E3 / OpTC / StreamSpot / Unicorn). They will be uplaoded once the paper gets accepted. 
-
-### 4. Launch Jupyter
+### 3. Launch Jupyter
 
 ```bash
 jupyter lab
@@ -71,15 +73,8 @@ jupyter notebook
 Then open the desired notebook (e.g., `Contorter on Flash PIDS/FLASH_CADETS.ipynb`) and execute the cells sequentially.
 
 ---
-
-## How Contorter Integrates Flash
-
-Flash uses graph embeddings and ensemble GNNs to classify node types and detect anomalies.
-Contorter manipulates provenance graphs to distort the contextual embeddings that Flash relies on, thereby evading detection.
-
-Many implementation details — including feature arrays, thresholding, and dataset partitioning — follow Flash’s open-source design and experimental setup.
-If you reuse or build upon this work, please **cite both Contorter and Flash** (see the citation section below).
-
+**Note:** Additional provenance-based intrusion detection systems (PIDS) and datasets used in this work will be made publicly available once the associated paper is accepted.
+---
 
 ## Code Attribution
 
@@ -103,3 +98,7 @@ Portions of this implementation build upon the **Flash** provenance-based intrus
   year={2024},
   organization={IEEE}
 }
+```
+
+
+
