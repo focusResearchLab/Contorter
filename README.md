@@ -80,18 +80,6 @@ Contorter manipulates provenance graphs to distort the contextual embeddings tha
 Many implementation details — including feature arrays, thresholding, and dataset partitioning — follow Flash’s open-source design and experimental setup.
 If you reuse or build upon this work, please **cite both Contorter and Flash** (see the citation section below).
 
-````
-
----
-
-✅ **Notes:**  
-- Code commands are fenced inside ```bash``` for syntax highlighting.  
-- Lists and subheaders are properly indented for readability.  
-- The use of bold and italics makes the section visually clean in Markdown renderers (GitHub, Jupyter, etc.).
-````
-
-
-
 
 ## Code Attribution
 
