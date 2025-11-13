@@ -1,18 +1,18 @@
 # Contorter 
 
 This repository contains the official implementation and analysis notebooks for **Contorter: A Context is Worth a Thousand Lies: Evading Intrusion Detectors via Intelligent Context Distortion**.  
-Contorter is an evasion framework that generates *contextually-plausible* gadget events to hide malicious nodes from node-level provenance-based intrusion detection systems (PIDSes). The notebooks reproduce the evasion experiments we ran against the **Flash** PIDS implementation and the DARPA E3 partitions used in our evaluation.
+Contorter is an evasion framework that generates *contextually-relevant* gadget events to hide malicious nodes from node-level provenance-based intrusion detection systems (PIDSes). The notebooks reproduce the evasion experiments we ran against the **Flash** PIDS implementation and the DARPA E3 partitions used in our evaluation.
 
 
 ![alt text](contorter-overview.png)
 ***
 
-## How Contorter Integrates Flash
+## How Contorter Leverages Flash's Code in Provenance Construction 
 
 We reuse Flash’s preprocessing and graph-construction modules to ensure full compatibility with the Flash pipeline:
 
 1. **Preprocessing** — convert raw JSON logs into the text files used for training (benign behavior) and testing (benign + malicious) using Flash’s preprocessing scripts.  
-2. **Provenance construction** — run Flash’s provenance-builder so the resulting provenance graphs follow the same formatting and field conventions that Flash expects. This guarantees the input representation matches Flash’s model inference pipeline.  
+2. **Provenance construction** — run Flash’s provenance-builder 
 3. **Contorter pipeline** — once graphs are constructed in Flash’s format, apply Contorter’s modules to select candidate nodes, retrieve and verify gadgets, and inject mimicry interactions. Evaluate detection metrics before and after injection to measure evasion effectiveness.
 
 
