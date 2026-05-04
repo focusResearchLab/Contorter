@@ -1,3 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cu117
+
 numpy==1.26.4
 pandas==2.1.4
 torch==1.13.1+cu117
@@ -5,3 +7,7 @@ tqdm==4.67.1
 gensim==4.3.3
 scikit-learn==1.2.0
 scipy==1.13.1
+networkx==3.4.2
+gdown==5.2.0
+jupyter==1.1.1
+ipykernel==6.29.5

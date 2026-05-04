@@ -1,124 +1,95 @@
-# Contorter on Flash
+# Contorter on NodLink
 
-This `README.md` summarizes the workflow of Contorter applied to **NodLink** PIDS.
+This directory contains the Contorter evasion notebooks for the **NodLink** provenance-based intrusion detection system.
 
----
 ## Directory Structure
+
 ```plaintext
-README.md
-requirements.txt
-Cadets/
-└─ notebooks and dependencies to run the experiments
-Theia/
-└─ notebooks and dependencies to run the experiments
-Trace/
-└─ notebooks and dependencies to run the experiments
-Fivedirections/
-└─ notebooks and dependencies to run the experiments
-OpTC/
-└─ notebooks and dependencies to run the experiments
-Unicorn/
-└─ notebooks and dependencies to run the experiments
-Streamspot/
-└─ notebooks and dependencies to run the experiments
+NodLink/
+  README.md
+  requirements.txt
+  Cadets/
+    download.ipynb
+    models_train.ipynb
+    NodLink_Cadets_Contorter.ipynb
+    utils/
+      Loader.py
+      config.py
+      model.py
+      tools.py
+  Theia/
+  Trace/
+  OpTC1/
+  OpTC2/
+  OpTC3/
+  Unicorn/
+  Streamspot/
 ```
----
 
-## Workflow Overview of NodLink_"Dataset"_Contorter.ipynb
+The populated implementation in this repository targets Cadets. Additional dataset directories are present for consistency with the project layout.
 
-### 1. Environment & Data Initialization
+## Setup
 
-* **Dependency Loading**: Imports specialized modules like `VariationalAutoencoder` and `FastText` for processing system logs.
-* **Dataset Filtering**: Loads benign and malicious dataframes, filtering for 15 specific malicious process UUIDs identified in the ground truth because NodLink detects malicious processes only. 
+Install the dependencies from the repository root:
 
-### 2. Feature Extraction & Embedding
+```bash
+pip install -r NodLink/requirements.txt
+```
 
-* **Text Processing**: Converts raw system logs into structured text files (`process-event-benign.txt` and `process-event-anomaly.txt`) where each process is mapped to its associated file paths.
-* **FastText Vectorization**:
-* Uses pre-trained `FastText` models to create embeddings for command lines and file paths.
-* Applies **TF-IDF** weighting and **Stability Norms** to the embeddings to account for the frequency and "noisiness" of certain system activities.
+Run `download.ipynb` first:
 
+```bash
+jupyter notebook NodLink/Cadets/download.ipynb
+```
 
-### 3. Baseline Detection (VAE)
+This notebook downloads the preprocessed data, trained models, and related files into the expected dependency directories. Then run the evasion notebook:
 
-* **Model Loading**: Loads a pre-trained **Variational Autoencoder (VAE)** (`AE.model`) and sets an anomaly threshold (cutoff) of **130**.
-* **Initial Performance**: Evaluates the model on the original malicious data, achieving a baseline **Recall (TPR) of 1.00** (detecting all 15 malicious processes).
+```bash
+jupyter notebook NodLink/Cadets/NodLink_Cadets_Contorter.ipynb
+```
 
-### 4. The Contorter Evasion Pipeline
+## Workflow Overview
 
-1. **Benign Node Selection**
-   This step doesn't need implementation as in Flash as we already have a file for benign processes.
+### 1. Environment and Data Initialization
 
-2. **Footprint Optimization (FOpt)**
-   Selects benign candidate processes that have between **FMin and FMax interactions**, ensuring they provide enough obfuscation without being overly complex.
+The notebooks load pandas, NumPy, PyTorch, Gensim FastText, scikit-learn, and NodLink helper modules. The Cadets workflow loads benign and malicious process records and filters malicious process UUIDs using the provided ground truth because NodLink performs process-level detection.
 
-3. **Contextual Similarity Maximization (CSMax)**
-   Uses **Cosine Similarity** to compare malicious process vectors against benign candidates. It retains the **top 10%** most similar benign processes for each malicious target.
+### 2. Feature Extraction and Embedding
 
-4. **Impact Maximization (ImpMax)**
-   Tests the VAE against these top candidates and selects the ones that yield the **lowest reconstruction loss** (i.e., the ones the model considers most "normal").
+Raw process-event records are converted into text files such as `process-event-benign.txt` and `process-event-anomaly.txt`, where each process is represented by its related command-line and file-path context. FastText embeddings, TF-IDF weighting, and stability normalization are used to produce process vectors.
 
-5. **Gadget Insetion**
-   Creates a new augmented dataset (`final-augmented-malicious-processes.txt`) by merging the malicious interactions with the benign candidates gadget identified in the previous steps.
+### 3. Baseline Detection with VAE
 
-6. **Evasion Verification (EVer)**
-   Re-runs the detection on the augmented data. The results show a significant drop in detection capability:
+The workflow loads or trains NodLink's Variational Autoencoder and evaluates the original malicious process vectors with a fixed anomaly threshold. This establishes the pre-evasion recall and reconstruction-loss profile.
 
----
+### 4. Contorter Evasion Pipeline
 
-## 📂 Contents
+1. **Benign Node Selection**: use the prepared benign process file as the source of candidate gadgets.
+2. **Footprint Optimization (FOpt)**: retain benign processes whose interaction counts fall between the configured `FMin` and `FMax`.
+3. **Contextual Similarity Maximization (CSMax)**: compute cosine similarity between malicious process vectors and benign candidates, then keep the most similar candidates.
+4. **Impact Maximization (ImpMax)**: evaluate candidate-augmented vectors with the VAE and select candidates that minimize reconstruction loss.
+5. **Gadget Insertion**: merge malicious process interactions with the selected benign candidate interactions to create `final-augmented-malicious-processes.txt`.
+6. **Evasion Verification (EVer)**: rerun NodLink on the augmented process file and compare detection with the baseline.
 
-### 1. `download.ipynb`
-This notebook contains a **single cell** that downloads all required dependencies for running the experiments.
+## Contents
 
-Running this notebook will:
-- Download the **preprocessed datasets**
-- Download the **trained models used in the evaluation**
-- Create a directory called **`dependencies/`** containing all required files
+- `Cadets/download.ipynb`: downloads preprocessed datasets, trained models, and dependency files.
+- `Cadets/NodLink_Cadets_Contorter.ipynb`: runs the Contorter evasion pipeline against NodLink on Cadets.
+- `Cadets/models_train.ipynb`: trains the NodLink VAE models used by the evaluation.
+- `Cadets/utils/`: model, loader, configuration, and data-processing helpers imported by the notebooks.
+- `requirements.txt`: Python packages used by the NodLink notebooks and helper modules.
 
-This step should be executed **first** before running the other notebooks.
+## Implementation Notes
 
+- In the Trace dataset workflow, empty process names should be replaced with a placeholder before model training to avoid malformed text records.
+- After creating `process-event-anomaly.txt`, malicious processes with no captured interactions may need to be excluded manually. This is a dataset deficiency rather than a detector behavior.
 
-### 2. `NodLink_"Dataset"_Contorter.ipynb`
-This notebook implements the **Contorter evasion pipeline**.
-
-It contains the full implementation of the **evasion methodology**, including the steps used to **obfuscate malicious nodes** within the provenance graph.
-
-### 3. `models_train.ipynb`
-This notebook contains the implementation used to **train the NodLink models** on the provided datasets.
-
-It includes:
-- Data loading
-- Model training
-- Model configuration
-- Saving trained models for later evaluation
-
-### 4. `utils/`
-This directory contains the **supporting Python modules** used by the notebooks.
-
-Examples include:
-- Model class implementations
-- Detection utilities
-- Helper functions used across experiments
-
-These modules are imported by the notebooks during training and evaluation.
-
----
-## Implementation notes
-
-- In Trace dataset, becasue most of the process names are empty, we will replace them with a placeholder value to avoid issues with the model training.  
-
-- After creating process-event-anomaly.txt, three malicious processes are excluded from the file manually as not interactions were captured for them, which is a dataset deficiency.
-
-
-
----
 ## Code Attribution
 
-Portions of this implementation build upon the **NodLink** provenance-based intrusion detection system (PIDS).
+Portions of this implementation build upon the **NodLink** provenance-based intrusion detection system.
 
-> **Citation:**  
-> Li, Shaofei; Dong, Feng; Xiao, Xusheng; Wang, Haoyu; Shao, Fei; Chen, Jiedong; Guo, Yao; Chen, Xiangqun; and Li, Ding.  
-> *NodLink: An Online System for Fine-Grained APT Attack Detection and Investigation.*  
-> arXiv preprint arXiv:2311.02331, 2023.  
-> https://github.com/PKU-ASAL/Simulated-Data
+Citation:
+
+Li, Shaofei; Dong, Feng; Xiao, Xusheng; Wang, Haoyu; Shao, Fei; Chen, Jiedong; Guo, Yao; Chen, Xiangqun; and Li, Ding. *NodLink: An Online System for Fine-Grained APT Attack Detection and Investigation.* arXiv preprint arXiv:2311.02331, 2023.
+
+Upstream project: https://github.com/PKU-ASAL/Simulated-Data

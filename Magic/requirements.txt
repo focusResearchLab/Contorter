@@ -1,0 +1,14 @@
+--extra-index-url https://download.pytorch.org/whl/cu117
+
+numpy==1.26.4
+pandas==2.2.3
+torch==2.0.1+cu117
+torch_geometric==2.6.1
+tqdm==4.67.1
+gensim==4.3.3
+scikit-learn==1.6.1
+scipy==1.13.1
+gdown==5.2.0
+requests==2.32.4
+jupyter==1.1.1
+ipykernel==6.29.5

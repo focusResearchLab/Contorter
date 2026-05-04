@@ -1,106 +1,88 @@
 # Contorter on Flash
 
-This `README.md` summarizes the workflow of Contorter applied to **FLASH** PIDS.
-
----
+This directory contains the Contorter evasion notebooks for the **FLASH** provenance-based intrusion detection system.
 
 ## Directory Structure
+
 ```plaintext
-README.md
-requirements.txt
-Cadets/
-└─ notebooks and dependencies to run the experiments
-Theia/
-└─ notebooks and dependencies to run the experiments
-Trace/
-└─ notebooks and dependencies to run the experiments
-Fivedirections/
-└─ notebooks and dependencies to run the experiments
-OpTC/
-└─ notebooks and dependencies to run the experiments
-Unicorn/
-└─ notebooks and dependencies to run the experiments
-Streamspot/
-└─ notebooks and dependencies to run the experiments
+Flash/
+  README.md
+  requirements.txt
+  Cadets/
+    Flash_Cadets_Contorter.ipynb
+  Theia/
+    Flash_Theia_Contorter.ipynb
+  Trace/
+    Flash_Trace_Contorter.ipynb
+  OpTC/
+    Flash_OpTC_Contorter.ipynb
+  Fivedirections/
+  Unicorn/
+  Streamspot/
 ```
----
 
-## Workflow Overview Flash_Dataset_Contorter.ipynb
+The populated notebooks reproduce the Contorter pipeline for Cadets, Theia, Trace, and OpTC.
 
-### 1. Environment Setup & Data Acquisition
+## Setup
 
-* **Package Initialization**: Imports essential libraries including.
-* **Dataset Download**: Retrieves the raw json/text data from the Flash project's Google Drive and pulls pre-trained model weights and ground truth labels.
+Install the dependencies from the repository root:
 
----
+```bash
+pip install -r Flash/requirements.txt
+```
+
+Then launch Jupyter and run the target dataset notebook from its dataset directory:
+
+```bash
+jupyter notebook Flash/Cadets/Flash_Cadets_Contorter.ipynb
+```
+
+The notebooks download external datasets, ground-truth labels, and trained FLASH model artifacts using `gdown` and `requests`.
+
+## Workflow Overview
+
+Each `Flash_<Dataset>_Contorter.ipynb` notebook follows the same structure.
+
+### 1. Environment Setup and Data Acquisition
+
+The notebook imports PyTorch, PyTorch Geometric, Gensim, scikit-learn, pandas, NumPy, and helper utilities. It downloads the raw or preprocessed dataset files, trained FLASH models, and labels needed for evaluation.
 
 ### 2. Data Preprocessing
 
-* **Log Parsing**: Extracts UUIDs, node types, and edge relationships from raw jsom logs.
-* **Attribute Mapping**: Merges event attributes (timestamps, executable paths) into a structured format used later for graph construction.
+Raw JSON or text audit logs are parsed into structured node and edge data. UUIDs, node types, edge relationships, timestamps, executable paths, and labels are aligned into dataframes used by the detector and by Contorter.
 
----
+### 3. Graph Construction and Feature Engineering
 
-### 3. Graph Construction & Feature Engineering
+FLASH-style graph inputs are built from the parsed provenance data. The notebooks use Word2Vec-style node/context embeddings and positional encodings to produce dense node features, then convert the graph into a PyTorch Geometric `Data` object containing node features, labels, and `edge_index`.
 
-* **Node Embedding**: Uses a **Word2Vec** model combined with a **Positional Encoder** to transform discrete node interactions into dense **30-dimensional feature vectors**.
-* **PyTorch Geometric Preparation**: Converts the processed data into a `Data` object containing:
+### 4. Baseline Detection Evaluation
 
-  * `x`: Feature matrix (node embeddings)
-  * `y`: Node labels (node types)
-  * `edge_index`: Adjacency list representing system interactions
+The notebooks run the original FLASH detector, including the pre-trained GraphSAGE/GCN-style model ensemble used by the upstream implementation, and compute baseline precision, recall, and F-score before evasion.
 
----
+### 5. Contorter Evasion Pipeline
 
-### 4. Initial Detection Evaluation
+1. **Benign Node Selection**: group benign nodes by type and identify candidates compatible with each malicious target.
+2. **Footprint Optimization (FOpt)**: keep candidates with a useful but limited number of interactions.
+3. **Contextual Similarity Maximization (CSMax)**: rank candidates by cosine similarity in the detector feature space.
+4. **Impact Maximization (ImpMax)**: for Cadets and Trace, use model confidence to select candidates with the strongest evasion effect.
+5. **Gadget Insertion**: inject edges connecting malicious nodes to selected benign-context gadgets.
+6. **Occurrence Verification (OccVer)**: remove duplicate rows before and after injection to verify that injected interactions already occurred in the original data.
+7. **Evasion Verification (EVer)**: rerun FLASH on the modified graph and compare detection metrics with the baseline.
 
-* **Ensemble Inference**: Runs an ensemble of **22 pre-trained Graph Convolutional Network (GCN) models**.
-* **Baseline Metrics**: Computes **Precision, Recall, and F-score** to evaluate how effectively the models detect malicious nodes in the original provenance graph (before applying Contorter evasion framework).
+## Contents
 
----
-
-### 5. The Contorter Evasion Pipeline
-
-1. **Benign Node Selection**
-   Groups nodes by label to identify potential benign candidates for mimicry.
-
-2. **Footprint Optimization (FOpt)**
-   Filters benign nodes with low but sufficient interaction counts to minimize structural noise, ensuring they provide enough obfuscation without being overly complex.
-
-3. **Contextual Similarity Maximization (CSMax)**
-   Uses **Cosine Similarity** to select benign nodes whose contextual embeddings most closely match those of the malicious targets.
-
-4. **Impact Maximization (ImpMax)**
-   Finalizes candidate nodes by selecting those predicted as **benign with high confidence** by the GCN ensemble. This step is applied for Cadets and Trace only. 
-
-5. **Gadget Insetion**
-   Injects new edges into the provenance graph linking malicious nodes to the selected benign candidates.
-
-6. **Ocurance Verification (OccVer)**
-   This step implementation is simple, we drop duplicates in the original dataframe (before evasion). And do the same after evasion, if both dataframe have the same number of rows after dropping duplicates, it means added edges occured before (we didn't create somehing new!).
-
-7. **Evasion Verification (EVer)**
-* **Ensemble Inference**: Runs an ensemble of **22 pre-trained Graph Convolutional Network (GCN) models**.
-* **Baseline Metrics**: Computes **Precision, Recall, and F-score** to evaluate how effectively the models detect malicious nodes in the modified provenance graph (after applying Contorter evasion framework).
-
----
-
-## 📂 Contents
-
-### `Flash_"Dataset"_Contorter.ipynb`  
-
-This notebook implements the **Contorter evasion pipeline**.
-
-It contains the full implementation of the **evasion methodology**, including the steps used to **obfuscate malicious nodes** within the provenance graph.
-
----
+- `Cadets/Flash_Cadets_Contorter.ipynb`: Contorter evaluation on the Cadets dataset.
+- `Theia/Flash_Theia_Contorter.ipynb`: Contorter evaluation on the Theia dataset.
+- `Trace/Flash_Trace_Contorter.ipynb`: Contorter evaluation on the Trace dataset.
+- `OpTC/Flash_OpTC_Contorter.ipynb`: Contorter evaluation on OpTC data.
+- `requirements.txt`: Python packages used by the FLASH notebooks.
 
 ## Code Attribution
 
-Portions of this implementation build upon the **FLASH** provenance-based intrusion detection system (PIDS).
+Portions of this implementation build upon the **FLASH** provenance-based intrusion detection system.
 
-> **Citation:**  
-> Rehman, Mati Ur; Ahmadi, Hadi; and Hassan, Wajih Ul.  
-> *FLASH: A Comprehensive Approach to Intrusion Detection via Provenance Graph Representation Learning.*  
-> *In Proceedings of the 2024 IEEE Symposium on Security and Privacy (SP),* pp. 3552–3570. IEEE, 2024.  
-> https://github.com/DART-Laboratory/Flash-IDS
+Citation:
+
+Rehman, Mati Ur; Ahmadi, Hadi; and Hassan, Wajih Ul. *FLASH: A Comprehensive Approach to Intrusion Detection via Provenance Graph Representation Learning.* In Proceedings of the 2024 IEEE Symposium on Security and Privacy, pp. 3552-3570. IEEE, 2024.
+
+Upstream project: https://github.com/DART-Laboratory/Flash-IDS
