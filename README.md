@@ -101,3 +101,16 @@ Large datasets and trained model files are not stored directly in this repositor
 ## Attribution
 
 This repository adapts code and trained-detector workflows from the original PIDS implementations. See the README inside each detector directory for detector-specific citations and upstream project links.
+
+## Citation
+
+If you find this work useful, please cite: 
+
+```bibtex
+@inproceedings{nasr2026contorter,
+  title={Contorter: A Context is Worth a Thousand Lies: Evading Intrusion Detectors via Intelligent Context Distortion},
+  author={Nasr, Magdy and Rastogi, Vansh and Tabiban, Azadeh},
+  booktitle={Proceedings of the IEEE Symposium on Security and Privacy (S\&P)},
+  year={2026}
+}
+```
